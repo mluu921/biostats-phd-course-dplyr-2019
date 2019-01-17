@@ -117,7 +117,7 @@ df <- mutate(df, race = factor(
 ))
 
 df <- mutate(df, death = factor(
-  df$death,
+  death,
   levels = c(0, 1),
   labels = c('0' = 'Alive', '1' = 'Died')
 ))
@@ -172,129 +172,103 @@ df <- df %>% mutate_at(., vars(temp0:temp15), fare_to_cel)
 
 ```
 
-## Transforming from wide to long and back
+<!-- ## Transforming from wide to long and back -->
 
-<!-- ![](figures/tidyr-spread-gather.gif) -->
+<!-- ![](figures/gather_data_R.png) -->
 
-![](figures/gather_data_R.png)
+<!-- ![](figures/spread_data_R.png) -->
 
-![](figures/spread_data_R.png)
+<!-- The dataframe in this example is structured in two different ways, in both a long and wide format. The wide format is structured by 'plot_id' in which each row is a single 'plot_id'. The long format is structured by 'mean_weight', in which each row pertains to a single 'mean_weight'. We can easily jump back and forth between these two different data structures using the `gather()` and `spread()` function. -->
 
-The dataframe in this example is structured in two different ways, in both a long and wide format. The wide format is structured by 'plot_id' in which each row is a single 'plot_id'. The long format is structured by 'mean_weight', in which each row pertains to a single 'mean_weight'. We can easily jump back and forth between these two different data structures using the `gather()` and `spread()` function.
+<!-- ```{r} -->
+<!-- ## here we are creating a new dataframe called 'long' -->
+<!-- long <- df %>% gather(., temp, value, temp0:temp15) -->
+<!-- long -->
 
-```{r}
-## here we are creating a new dataframe called 'long'
-long <- df %>% gather(., temp, value, temp0:temp15)
-long
+<!-- ## here we are arranging the new dataframe by chronological id -->
+<!-- long <- long %>% arrange(., id) -->
+<!-- long -->
 
-## here we are arranging the new dataframe by chronological id
-long <- long %>% arrange(., id)
-long
+<!-- ## here we are creating a new dataframe called 'wide' by converting the long dataframe back to wide format -->
+<!-- ## they are both valid formats we can work with in R -->
+<!-- wide <- long %>% spread(., temp, value) -->
+<!-- wide -->
+<!-- ``` -->
 
-## here we are creating a new dataframe called 'wide' by converting the long dataframe back to wide format
-## they are both valid formats we can work with in R
-wide <- long %>% spread(., temp, value)
-wide
-```
+<!-- ## Extracting specific observations -->
+<!-- ```{r} -->
 
-## Extracting specific observations
-```{r}
+<!-- ## to extract specific observations we can use the filter() function, and state a criteria. Here we are extracting only patients in the Control group -->
+<!-- df %>% filter(., treat == 'Control') -->
 
-## to extract specific observations we can use the filter() function, and state a criteria. Here we are extracting only patients in the Control group
-df %>% filter(., treat == 'Control')
+<!-- ## here we are extracting white control patients  -->
+<!-- df %>% filter(., treat == 'Control' & race == 'White') -->
 
-## here we are extracting white control patients 
-df %>% filter(., treat == 'Control' & race == 'White')
+<!-- ## here we are extracting white control patients who died  -->
+<!-- df %>% filter(., treat == 'Control' & race == 'White' & death == 'Died') -->
 
-## here we are extracting white control patients who died 
-df %>% filter(., treat == 'Control' & race == 'White' & death == 'Died')
+<!-- ## here we are extracting white control patients with apache score greater than 10 or who died  -->
+<!-- df %>% filter(., (treat == 'Control' & race == 'White' ) & (apache > 10 | death == 'Died')) -->
+<!-- ``` -->
 
-## here we are extracting white control patients with apache score greater than 10 or who died 
-df %>% filter(., (treat == 'Control' & race == 'White' ) & (apache > 10 | death == 'Died'))
-```
+<!-- ## Selecting specific columns or variables  -->
+<!-- ```{r} -->
+<!-- ## perhaps we wanted to extract a dataframe that only contains id, treat, race, apache, and death -->
+<!-- df %>% select(., id, treat, race, apache, death) -->
 
-## Selecting specific columns or variables 
-```{r}
-## perhaps we wanted to extract a dataframe that only contains id, treat, race, apache, and death
-df %>% select(., id, treat, race, apache, death)
+<!-- ## perhaps we wanted to extract only the id and the temp variables  -->
+<!-- df %>% select(., id, temp0:temp15) -->
 
-## perhaps we wanted to extract only the id and the temp variables 
-df %>% select(., id, temp0:temp15)
+<!-- ## perhaps we wanted to extract all the variables except outcome e.g. death -->
+<!-- df %>% select(., -death) -->
 
-## perhaps we wanted to extract all the variables except outcome e.g. death
-df %>% select(., -death)
+<!-- ## we can also use a numerical indicator of the column number to select a range of columns, e.g the first 5 columns  -->
+<!-- df %>% select(., 1:5) -->
+<!-- ``` -->
 
-## we can also use a numerical indicator of the column number to select a range of columns, e.g the first 5 columns 
-df %>% select(., 1:5)
-```
+<!-- ## Summarizing data with dplyr -->
+<!-- ```{r} -->
+<!-- ## lets taking a simple count of the dataframe -->
+<!-- df %>% summarise(., n = n()) -->
 
-## Summarizing data with dplyr
-```{r}
-## lets taking a simple count of the dataframe
-df %>% summarise(., n = n())
+<!-- ## the summzarise function becomes very powerful when you use it in conjuntion with the group_by() function -->
+<!-- ## lets take the count of control and ibuprofenol patients in our dataset  -->
+<!-- df %>%  -->
+<!--   group_by(treat) %>% -->
+<!--   summarise(., n = n()) -->
 
-## the summzarise function becomes very powerful when you use it in conjuntion with the group_by() function
-## lets take the count of control and ibuprofenol patients in our dataset 
-df %>% 
-  group_by(treat) %>%
-  summarise(., n = n())
+<!-- ## we can expand this further by including more factors in group_by() -->
+<!-- ## here lets take the count of people who died among the different arms -->
+<!-- df %>% -->
+<!--   group_by(., treat, death) %>% -->
+<!--   summarise(., n = n()) -->
 
-## we can expand this further by including more factors in group_by()
-## here lets take the count of people who died among the different arms
-df %>%
-  group_by(., treat, death) %>%
-  summarise(., n = n())
+<!-- ## we can also further expand this by adding more functions into the summarise function -->
+<!-- df %>% -->
+<!--   group_by(., treat, death) %>% -->
+<!--   summarise(., mean_temp0 = mean(temp0, na.rm = T), sd_temp0 = sd(temp0, na.rm = T)) -->
 
-## we can also further expand this by adding more functions into the summarise function
-df %>%
-  group_by(., treat, death) %>%
-  summarise(., mean_temp0 = mean(temp0, na.rm = T), sd_temp0 = sd(temp0, na.rm = T))
+<!-- ## here we are using a cousin of the summarise function called summarise_at() which allows us to easily summarise many columns at once, with a list of functions -->
+<!-- df %>% -->
+<!--   group_by(., treat, death) %>% -->
+<!--   summarise_at(., vars(temp0:temp15), list('mean' = mean, 'sd' = sd), na.rm = T) -->
 
-## here we are using a cousin of the summarise function called summarise_at() which allows us to easily summarise many columns at once, with a list of functions
-df %>%
-  group_by(., treat, death) %>%
-  summarise_at(., vars(temp0:temp15), list('mean' = mean, 'sd' = sd), na.rm = T)
+<!-- ``` -->
 
-```
-
-## More advanced summary table
-```{r}
-df %>%
-  group_by(., treat) %>%
-  summarise_at(., vars(temp0:temp15), list('mean' = mean, 'sd' = sd), na.rm = T) %>%
-  gather(., key, var, temp0_mean:temp15_sd) %>%
-  separate(., 'key', c('temp', 'type')) %>%
-  mutate(., temp = as_factor(temp)) %>%
-  spread(., type, var) %>%
-  modify_if(., is.numeric, ~ round(.x, 2)) %>%
-  transmute(., treat, temp, mean_sd = glue::glue('{mean} ({sd})')) %>%
-  spread(treat, mean_sd) %>%
-  arrange(., temp)
-```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+<!-- ## More advanced summary table -->
+<!-- ```{r} -->
+<!-- df %>% -->
+<!--   group_by(., treat) %>% -->
+<!--   summarise_at(., vars(temp0:temp15), list('mean' = mean, 'sd' = sd), na.rm = T) %>% -->
+<!--   gather(., key, var, temp0_mean:temp15_sd) %>% -->
+<!--   separate(., 'key', c('temp', 'type')) %>% -->
+<!--   mutate(., temp = as_factor(temp)) %>% -->
+<!--   spread(., type, var) %>% -->
+<!--   modify_if(., is.numeric, ~ round(.x, 2)) %>% -->
+<!--   transmute(., treat, temp, mean_sd = glue::glue('{mean} ({sd})')) %>% -->
+<!--   spread(treat, mean_sd) %>% -->
+<!--   arrange(., temp) -->
+<!-- ``` -->
 
 
 
