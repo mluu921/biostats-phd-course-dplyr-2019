@@ -176,6 +176,12 @@ df <- df %>% mutate_at(., vars(temp0:temp15), fare_to_cel)
 
 <!-- ![](figures/tidyr-spread-gather.gif) -->
 
+![](figures/gather_data_R.png)
+
+![](figures/spread_data_R.png)
+
+The dataframe in this example is structured in two different ways, in both a long and wide format. The wide format is structured by 'plot_id' in which each row is a single 'plot_id'. The long format is structured by 'mean_weight', in which each row pertains to a single 'mean_weight'. We can easily jump back and forth between these two different data structures using the `gather()` and `spread()` function.
+
 ```{r}
 ## here we are creating a new dataframe called 'long'
 long <- df %>% gather(., temp, value, temp0:temp15)
